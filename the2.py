@@ -1,127 +1,85 @@
-def inside(x, y, points):
-
-    n = len(points)
-    inside = False
-    p1x, p1y = points[0]
-    for i in range(1, n + 1):
-        p2x, p2y = points[i % n]
-        if y > min(p1y, p2y):
-            if y <= max(p1y, p2y):
-                if x <= max(p1x, p2x):
-                    if p1y != p2y:
-                        xinters = (y - p1y) * (p2x - p1x) / (p2y - p1y) + p1x
-                    if p1x == p2x or x <= xinters:
-                        inside = not inside
-        p1x, p1y = p2x, p2y
-    return inside
-
-
-
-def calculateActuator(p1,p2):
-	ipx = None
-	ipy = None
-	if p1[0][0] == p1[1][0]:
-		if p2[0][0] == p2[1][0]:
-			return 0
-		else:
-			ipx = p1[0][0]
-		if p2[0][1] == p2[1][1]:
-			ipy = p2[0][1]
-		if(ipy == None):			
-			m=(p2[1][1]-p2[0][1])/(p2[1][0]-p2[0][0])
-			ipy = (ipx-p2[1][0])*m+p2[1][1]
-
-
-
-	if p1[0][1] == p1[1][1]:
-		if p2[0][1] == p2[1][1]:
-			return 0
-		else:
-			ipy = p1[0][1]
-		if p2[0][0] == p2[1][0]:
-			ipx = p2[0][0]
-		if(ipx == None):			
-			m=(p2[1][1]-p2[0][1])/(p2[1][0]-p2[0][0])
-			ipx=(ipy-p2[0][1])/m-p2[0][0]
-
-
-
-
-	if p2[0][0] == p2[1][0]:
-		if p1[0][0] == p1[1][0]:
-			return 0
-		else:
-			ipx = p2[0][0]
-		if p1[0][1] == p1[1][1]:
-			ipy = p1[0][1]
-
-		if(ipy == None):			
-			m=(p1[1][1]-p1[0][1])/(p1[1][0]-p1[0][0])
-			ipy = (ipx-p1[1][0])*m+p1[1][1]
-
-	if p2[0][1] == p2[1][1]:
-		if p1[0][1] == p1[1][1]:
-			return 0
-		else:
-			ipy = p2[0][1]
-		if p1[0][0] == p1[1][0]:
-			ipx = p1[0][0]
-
-		if(ipx == None):			
-			m=(p1[1][1]-p1[0][1])/(p1[1][0]-p1[0][0])
-			ipx=(ipy-p1[0][1])/m-p1[0][0] 
-	if ipx == None and ipy == None:
-		M_line0=(p1[1][1]-p1[0][1])/(p1[1][0]-p1[0][0])
-		M_line1=(p2[1][1]-p2[0][1])/(p2[1][0]-p2[0][0])
-		ipx=(M_line1*p2[0][0]-M_line0*p1[0][0]+p1[0][1]-p2[0][1])/(M_line1-M_line0)
-		ipy=M_line0*ipx-p1[0][0]*M_line0+p1[0][1]
-	return (ipx,ipy)	
-	
-def intersec(p1,p2):
-	cl1=[min(p1[0][0],p1[1][0]),max(p1[1][0],p1[0][0])]
-	cl2=[min(p2[0][0],p2[1][0]),max(p2[1][0],p2[0][0])]
-	sum_cl=[max(cl1[0],cl2[0]),min(cl1[1],cl2[1])]
-	cl3=[min(p1[0][1],p1[1][1]),max(p1[1][1],p1[0][1])]
-	cl4=[min(p2[0][1],p2[1][1]),max(p2[1][1],p2[0][1])]
-	sum_cl1=[max(cl3[0],cl4[0]),min(cl3[1],cl4[1])]
-	
-	if cl1[1]<cl2[0] or cl3[1]<cl4[0]:
-		return 0
-
-	x = calculateActuator(p1,p2) 
-
-	if  x != 0:
-
-		if ((x[0]<sum_cl[0] or x[0]>sum_cl[1])) or ((x[1]<sum_cl1[0] or x[1]>sum_cl1[1])):
-			return 0
-		return x
-	else:
-		return 0
-		
-def minority_shape_intersect(poly1,poly2):
-	intersection_points=[]
-	for i in range(len(poly1)):
-		for j in range(len(poly2)):
-			if i == len(poly1)-1:
-				p1=[poly1[i],poly1[0]]
-			else:
-				p1=[poly1[i],poly1[i+1]]
-			if j == len(poly2)-1:
-				p2=[poly2[j],poly2[0]]
-			else:
-				p2=[poly2[j],poly2[j+1]]
-
-			x=intersec([(p1[0][0]*1.0, p1[0][1]*1.0),(p1[1][0]*1.0,p1[1][1]*1.0)], \
-				[(p2[0][0]*1.0, p2[0][1]*1.0),(p2[1][0]*1.0,p2[1][1]*1.0)])
-			if x != 0:
-				intersection_points.append(x)
-
-	for i in range(len(poly1)):
-		if inside(poly1[i][0], poly1[i][1], poly2):
-			intersection_points.append(poly1[i])
-	for j in range(len(poly2)):
-		if inside(poly2[j][0], poly2[j][1], poly1):
-			intersection_points.append(poly2[j])
+def is_intersect(lower_block,upper_block):
+    if upper_block[2] < lower_block[0] < upper_block[0] or upper_block[2] < lower_block[2] < upper_block[0] or lower_block[2] < upper_block[0] < lower_block[0] or lower_block[2] < upper_block[2] < lower_block[0]:
+        return True
+    else:
+        return False
+def damnare_intersect(lower_block,upper_block,y_ranges):
+    
+    else:
+        area_upper = abs(upper_block[0] - upper_block[2]) * abs(upper_block[1] - upper_block[3])
+        area_lower = abs(lower_block[0] - lower_block[2]) * abs(lower_block[1] - lower_block[3])
+def is_firmus(upper_block,lower_block):
+    if upper_block[0] < upper_block[2]: #list x dcreasing order
+        temp1 = upper_block[0]
+        upper_block[0] = upper_block[2]
+        upper_block[2] = temp1
+        temp2 = upper_block[1]
+        upper_block[1] = upper_block[3]
+        upper_block[3] = temp2
+    if lower_block[0] < lower_block[2]:
+        temp1 = lower_block[0]
+        lower_block[0] = lower_block[2]
+        lower_block[2] = temp1
+        temp2 = lower_block[1]
+        lower_block[1] = lower_block[3]
+        lower_block[3] = temp2
+    y1 = upper_block[1] if upper_block[1] > upper_block[3] else upper_block[3] #big y of the upper
+    y2 = lower_block[1] if lower_block[1] > lower_block[3] else lower_block[3] #big y of lower
+    y3 = upper_block[1] if upper_block[1] < upper_block[3] else upper_block[3] #low of upper
+    y4 = lower_block[1] if lower_block[1] < lower_block[3] else lower_block[3] #low of lower
+    y_ranges = [y1,y2,y3,y4]
+    if y1 < y2:#which one is top box
+        templist = []
+        templist[:] = upper_block[:]
+        upper_block[:] = lower_block[:]
+        lower_block[:] = templist[:]
+    upper_center_of_mass_point = (upper_block[0] + upper_block[2])/2
+    area_upper = abs(upper_block[0] - upper_block[2]) * abs(upper_block[1] - upper_block[3])
+    area_lower = abs(lower_block[0] - lower_block[2]) * abs(lower_block[1] - lower_block[3])
+    if abs(y4) < 0.001 : #check if lower on the ground
+        if is_intersect(lower_block,upper_block):#check if upper on lower
+            if abs(y3 - y2) < 0.001: #checks if touching the boxes
+                if lower_block[2] - 0.001 < upper_center_of_mass_point < lower_block[0] + 0.001: #checks balance
+                    return ['FIRMUS',area_lower+area_upper]
+                else:
+                    add_block = [0,0,0,0]
+                    if upper_center_of_mass_point < lower_block[2] + 0.001: #sola dusecek
+                        distance = abs(lower_block[2] - upper_block[2]) - abs(upper_block[0] - lower_block[2])
+                        add_block[2] = upper_block[0] + abs(distance)
+                        add_block[1] = upper_block[1]
+                        add_block[0] = upper_block[0]
+                        add_block[3] = upper_block[3]
+                        return ['ADDENDUM',add_block]
+                    else:#saga dsecek
+                        distance = abs(upper_block[0] - lower_block[0]) - abs(lower_block[0] - upper_block[2])
+                        add_block[2] = upper_block[2] - abs(distance)
+                        add_block[1] = upper_block[1]
+                        add_block[0] = upper_block[2]
+                        add_block[3] = upper_block[3]
+                        return ['ADDENDUM',add_block]
+            else:#boxs is not top to top but may intersect
+                if is_intersect():
+                    return damnare_intersect(lower_block,upper_block)
+                else:
+                    return ['DAMNARE',area_lower+area_upper]
+        else:#no intersect for x axis
+            return ['DAMNARE',area_lower+area_upper]
+    else:
+        if is_intersect(lower_block,upper_block,y_ranges):
+            return damnare_intersect(lower_block,upper_block)
+        else:
+            return ['DAMNARE',area_lower+area_upper]
 
 
-	return intersection_points	
+
+
+
+
+
+
+
+
+
+
+        #[x1,y1,x2,y2]
+    #[0,1,2,3]
